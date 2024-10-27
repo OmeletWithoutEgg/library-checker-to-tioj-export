@@ -1,0 +1,8 @@
+username = 'darkicpc'
+password = 'jlsyyds'
+tioj_url = 'https://tioj.yourdomain.org/'
+
+def tioj_problem_name(library_checker_problem_title):
+    return '[LC] ' + library_checker_problem_title
+
+tag_list = ', '.join(['library-checker', 'template'])

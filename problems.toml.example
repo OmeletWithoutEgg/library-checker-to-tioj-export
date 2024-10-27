@@ -1,0 +1,8 @@
+[[problems]]
+name = 'aplusb'
+tioj_problem_id = 7122
+# testcase_hash = '' # SHA256-hash of hash.json? # TODO
+
+[[problems]]
+name = 'assignment'
+tioj_problem_id = 7123
