@@ -229,7 +229,8 @@ def main():
                 samples = parse_samples(problem_dir, content)
                 continue
             s = parse_tags(problem, content)
-            if heading == "## @{keyword.input}" or heading == "## @{keyword.output}":
+            if heading == "## @{keyword.input}" or \
+               heading == "## @{keyword.output}":
                 s = unwrap_backtick(s)
             s = fix_superscript(s)
             s = s.strip()
@@ -240,14 +241,14 @@ def main():
             problem_name}]({problem_url})'''
 
         for index, (in_file, out_file) in enumerate(samples):
+            prefix = f'problem[sample_testdata_attributes][{index}]'
             with open(in_file, 'rb') as f:
-                data[f'problem[sample_testdata_attributes][{
-                    index}][input]'] = f.read().decode()
+                data[f'{prefix}[input]'] = f.read().decode()
             with open(out_file, 'rb') as f:
-                data[f'problem[sample_testdata_attributes][{
-                    index}][output]'] = f.read().decode()
+                data[f'{prefix}[output]'] = f.read().decode()
 
-        data['problem[name]'] = config.tioj_problem_name(problem.config['title'])
+        data['problem[name]'] = config.tioj_problem_name(
+            problem.config['title'])
         data['problem[tag_list]'] = config.tag_list
 
         # problem[name]
