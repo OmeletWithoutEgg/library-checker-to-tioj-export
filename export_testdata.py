@@ -19,14 +19,14 @@ def pair_in_out_files(in_files, out_files):
     return list(sorted(pairs))
 
 
-def create_testdata(tioj, problem_id, problem_dir):
+def create_testdata(tioj, problem_id: int, problem_dir: Path, timelimit_ms: int):
     inputs = tioj.get_inputs(f'/problems/{problem_id}/testdata/new')
 
     data = {}
     data['authenticity_token'] = inputs.find(
         'authenticity_token')[0].attrs['value']
     data['commit'] = inputs.find('commit')[0].attrs['value']
-    data['testdatum[time_limit]'] = 10000  # 10 seconds
+    data['testdatum[time_limit]'] = timelimit_ms
     data['testdatum[vss_limit]'] = 2 * 1024 * 1024  # 2GiB
     data['testdatum[rss_limit]'] = ''
     data['testdatum[output_limit]'] = 2 * 1024 * 1024  # 2GiB
@@ -112,8 +112,13 @@ def main():
 
         logger.info('Uploading testdata to TIOJ for {} (problem {})'
                     .format(problem_name, tioj_problem_id))
+
+        original_timelimit = problem.config['timelimit']
+        timelimit = problem_dict.get('timelimit', original_timelimit)
+
         destroy_testdata(tioj, tioj_problem_id)
-        create_testdata(tioj, tioj_problem_id, problem_dir)
+        create_testdata(tioj, tioj_problem_id,
+                        problem_dir, int(timelimit * 1000))
 
         # problem.generate(Problem.Mode.CLEAN)
 

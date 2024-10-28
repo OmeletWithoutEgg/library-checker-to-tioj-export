@@ -6,3 +6,5 @@ tioj_problem_id = 7122
 [[problems]]
 name = 'assignment'
 tioj_problem_id = 7123
+# if the timelimit is different, there will be a warning note in hint section
+timelimit = 2.0

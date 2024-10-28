@@ -207,9 +207,6 @@ def main():
             raise ValueError('Cannot find problem: {}'.format(problem_name))
         problem = Problem(rootdir, problem_dir)
         problem.generate(Problem.Mode.DEFAULT)
-        logger.debug('Checker is {}'.format(problem.checker))
-        # TODO: handle checker
-        # `problem[specjudge_type]` and `problem[sjcode]`
 
         with open(problem_dir / 'task.md', 'rb') as f:
             markdown_document = f.read().decode()
@@ -237,8 +234,8 @@ def main():
             data[HEADING_FIELD_MAPPING[heading]] = s
 
         problem_url = f'https://judge.yosupo.jp/problem/{problem_name}'
-        data['problem[source]'] = f'''[library checker: {
-            problem_name}]({problem_url})'''
+        data['problem[source]'] = \
+            f'[library checker: {problem_name}]({problem_url})'
 
         for index, (in_file, out_file) in enumerate(samples):
             prefix = f'problem[sample_testdata_attributes][{index}]'
@@ -259,6 +256,23 @@ def main():
         # problem[sample_testdata_attributes][0][output]
         # problem[hint]
         # problem[source]
+
+        logger.debug('Checker is {}'.format(problem.checker))
+        data['problem[specjudge_type]'] = 'old'  # old-type special judge
+        with open(problem.checker, 'rb') as f:
+            sjcode = f.read().decode()
+
+            regex = r'#include\s*?"testlib\.h"'
+            flags = re.MULTILINE | re.DOTALL
+            sjcode = re.sub(regex, '#include "tioj_testlib.h"',
+                            sjcode, flags=flags)
+            data['problem[sjcode]'] = sjcode
+
+        original_timelimit = problem.config['timelimit']
+        timelimit = problem_dict.get('timelimit', original_timelimit)
+        if timelimit != original_timelimit:
+            data['problem[hint]'] += \
+                f'\n\n**Note that timelimit is different from {problem_url}**'
 
         destroy_samples(tioj, tioj_problem_id)
         edit_problem(tioj, tioj_problem_id, data)
