@@ -48,7 +48,7 @@ class UserTIOJ():
         logger.info('TIOJ logging in...')
         inputs = self.get_inputs('/users/sign_in')
         auth_token = inputs.find('authenticity_token')[0].attrs['value']
-        rel = self.session.post(f'{self.tioj_url}/users/sign_in', data={
+        rel = self.post('/users/sign_in', data={
             'authenticity_token': auth_token,
             'user[username]': TIOJusername,
             'user[password]': TIOJpassword,
