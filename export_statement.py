@@ -125,7 +125,7 @@ def parse_tags(problem, content: str):
     return content
 
 
-def parse_samples(problem_dir: Path, content: str) -> [(Path, Path)]:
+def parse_samples(problem_dir: Path, content: str) -> ([(Path, Path)], str):
     # The location to find example file is {in,out}/{*example*}
     # reference: https://github.com/yosupo06/library-checker-judge/blob/master/storage/upload.go#L165
     regex = r'@\{example\.(.*?)\}'
@@ -137,16 +137,8 @@ def parse_samples(problem_dir: Path, content: str) -> [(Path, Path)]:
         out_file = example + '.out'
         samples.append((problem_dir / 'in' / in_file,
                        problem_dir / 'out' / out_file))
-
-    content = re.sub(regex, content, '', flags=flags)
-
-    # The leftover @{} will be treat as errors
-    regex = r'@\{.*\}'
-    flags = re.MULTILINE | re.DOTALL
-    if re.search(regex, content, flags=flags):
-        raise ValueError('This markdown document requires manual conversion.')
-
-    return samples
+    content = re.sub(regex, '', content, flags=flags)
+    return samples, content
 
 
 def unwrap_backtick(content: str) -> str:
@@ -210,6 +202,7 @@ def main():
 
         with open(problem_dir / 'task.md', 'rb') as f:
             markdown_document = f.read().decode()
+            samples, markdown_document = parse_samples(problem_dir, markdown_document)
             paragraphs = split_markdown(markdown_document)
 
         HEADING_FIELD_MAPPING = {
@@ -223,7 +216,6 @@ def main():
         for heading in paragraphs:
             content = paragraphs[heading]
             if heading == "## @{keyword.sample}":
-                samples = parse_samples(problem_dir, content)
                 continue
             s = parse_tags(problem, content)
             if heading == "## @{keyword.input}" or \
