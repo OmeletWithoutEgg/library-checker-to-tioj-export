@@ -153,8 +153,23 @@ def unwrap_backtick(content: str) -> str:
     return content
 
 
-def fix_superscript(content: str) -> str:
-    return content.replace('^', '^ ')
+def disable_mathmode_in_inlinde_codeblock(content: str) -> str:
+    regex = r'`(?:.*?)`'
+
+    def handler(matchobj):
+        s = matchobj.group()
+        return s.replace('$', '')
+    return re.sub(regex, handler, content)
+
+
+def fix_superscript_subscript(content: str) -> str:
+    regex = r'(?:\$([^\$]+)\$)|(?:\$\$([^\$]+)\$\$)'
+
+    # only replace superscript and subscript in math mode
+    def handler(matchobj):
+        s = matchobj.group()
+        return s.replace('^', '^ ').replace('_', '_ ')
+    return re.sub(regex, handler, content)
 
 
 def main():
@@ -202,7 +217,8 @@ def main():
 
         with open(problem_dir / 'task.md', 'rb') as f:
             markdown_document = f.read().decode()
-            samples, markdown_document = parse_samples(problem_dir, markdown_document)
+            samples, markdown_document = parse_samples(
+                problem_dir, markdown_document)
             paragraphs = split_markdown(markdown_document)
 
         HEADING_FIELD_MAPPING = {
@@ -213,6 +229,10 @@ def main():
         }
 
         data = {}
+        for key in HEADING_FIELD_MAPPING:
+            data[HEADING_FIELD_MAPPING[key]] = ''
+        data['problem[proxyjudge_type]'] = 'none'
+
         for heading in paragraphs:
             content = paragraphs[heading]
             if heading == "## @{keyword.sample}":
@@ -221,7 +241,8 @@ def main():
             if heading == "## @{keyword.input}" or \
                heading == "## @{keyword.output}":
                 s = unwrap_backtick(s)
-            s = fix_superscript(s)
+            s = disable_mathmode_in_inlinde_codeblock(s)
+            s = fix_superscript_subscript(s)
             s = s.strip()
             data[HEADING_FIELD_MAPPING[heading]] = s
 
